@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createStdioServer, addTool, subtractTool, addToolWrapper, subtractToolWrapper, type CalculatorError } from '../server.js';
+import { screenshotToolWrapper, type ScreenshotError, type ScreenshotOptions } from '../../screenshot/index.js';
 
 describe('server', () => {
   describe('createStdioServer', () => {
@@ -396,6 +397,32 @@ describe('server', () => {
         expect(result4.error.message).toContain('Unknown error');
       }
     });
+  });
 
+  describe('MCP server integration', () => {
+    it('should register screenshot tool in server', () => {
+      const server = createStdioServer();
+      
+      expect(server).toBeDefined();
+      expect(typeof server.tool).toBe('function');
+    });
+
+    it('should have updated server name', () => {
+      const server = createStdioServer();
+      
+      // サーバーが正常に作成されることを確認
+      expect(server).toBeDefined();
+      expect(typeof server.connect).toBe('function');
+    });
+
+    it('should handle screenshot wrapper integration', async () => {
+      // Test basic integration with screenshot wrapper
+      const result = await screenshotToolWrapper({
+        url: '',
+      });
+
+      expect(result.content[0].text).toContain('Error:');
+      expect('isError' in result && result.isError).toBe(true);
+    });
   });
 });

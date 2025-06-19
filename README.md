@@ -1,46 +1,94 @@
-# MCP Server テンプレート
+# Screenshot MCP Server
 
-Claude Codeで開発する用のMCPサーバーテンプレート
+PuppeteerライブラリとMCPフレームワークを使用してWebページのスクリーンショット機能を提供するMCPサーバー
 
-## ディレクトリ構造
+## 機能
 
-```
-mcp-template/
-  ├── CLAUDE.md                      # Claude Memoryに保存される
-  ├── README.md
-  ├── package.json
-  ├── tsconfig.json
-  ├── eslint.config.mjs
-  ├── vitest.config.ts
-  ├── coverage/                      # テストカバレッジレポート
-  ├── dist/                          # ビルド成果物
-  ├── project/                       # プロジェクト管理
-  │   ├── RULE.md                    # プロジェクトルール
-  │   ├── TECK_STACK.md              # 技術スタック
-  │   ├── BASE_STRUCTURE.md          # 基本ディレクトリ構造
-  │   ├── requirements               # 要件定義書
-  │   ├── references                 # 参考資料
-  │   ├── tasks/                     # タスク管理
-  │   │   ├── backlog/               # 未着手課題
-  │   │   ├── in-progress/           # 着手中課題
-  │   │   └── done/                  # 完了課題
-  │   └── template/                  # タスクテンプレート
-  └── src/                           # FSDアーキテクチャ
-      ├── app/                       # アプリケーション層
-      ├── features/                  # 機能層
-      |   ├── [feature-name]
-      |   |   ├── tests/             # テスト層
-      |   |   ├── [feature-name].ts  # MCP Tool
-      |   |   └── index.ts           # API
-      │   └── server/                # MCP Tool 登録
-      ├── entities/                  # エンティティ層
-      └── shared/                    # 共有層
-          └── lib/
+### スクリーンショット取得機能
+- **URL**: HTTPSサイトのスクリーンショットを取得
+- **ビューポート**: カスタム幅・高さ設定可能（デフォルト: 1280x720）
+- **フルページ**: デフォルトでフルページ、ビューポート指定時は自動で無効
+- **出力**: PNGファイルとメタデータ
+- **型安全性**: TypeScriptによる完全な型安全性（any型不使用）
+- **テストカバレッジ**: 100%のコードカバレッジ
+
+### MCPツール仕様
+
+#### 必須パラメータ
+- `url` (string): スクリーンショット対象のHTTPS URL
+
+#### オプションパラメータ
+- `width` (number): ビューポート幅（デフォルト: 1280）
+- `height` (number): ビューポート高さ（デフォルト: 720）
+- `fullPage` (boolean): フルページスクリーンショット（デフォルト: true、width/height指定時は自動でfalse）
+- `outputPath` (string): 出力ファイルパス（デフォルト: 自動生成）
+
+#### 使用例
+
+**デフォルト（フルページ）**
+```json
+{
+  "name": "screenshot",
+  "arguments": {
+    "url": "https://example.com"
+  }
+}
 ```
 
-## カスタムコマンド
+**カスタムビューポート**
+```json
+{
+  "name": "screenshot",
+  "arguments": {
+    "url": "https://example.com",
+    "width": 800,
+    "height": 600
+  }
+}
+```
 
-- `/project:rule`: プロジェクトのルールをに確認する
+**カスタム出力パス**
+```json
+{
+  "name": "screenshot",
+  "arguments": {
+    "url": "https://example.com",
+    "outputPath": "/custom/path/screenshot.png"
+  }
+}
+```
+
+### セキュリティ制約
+- HTTPS URLのみ許可
+- ローカルファイルアクセス禁止
+- 最大タイムアウト: 30秒
+
+### テストと品質
+- **テストフレームワーク**: Vitest
+- **テストカバレッジ**: 100%（ステートメント、ブランチ、関数、行すべて）
+- **型安全性**: any型を一切使用しない完全な型安全コード
+- **エラーハンドリング**: neverthrowによる関数型エラーハンドリング
+
+## 開発・テスト
+
+### コマンド
+```bash
+# テスト実行
+npm run test
+
+# カバレッジ確認（100%達成済み）
+npm run test:cov
+
+# 型チェック
+npx tsc --noEmit
+
+# ビルド
+npm run build
+```
+
+### カスタムコマンド
+
+- `/project:rule`: プロジェクトのルールを確認する
 - `/project/task:count`: タスクの件数を確認する
 - `/project/requirement:create`: 要求タスクを作成する
 - `/project/requirement:execute`: 要求タスクを実行する

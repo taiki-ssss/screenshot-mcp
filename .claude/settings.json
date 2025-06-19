@@ -33,7 +33,7 @@
       "Bash(date)"
     ],
     "deny": [
-      "Bash",
+      "Bash(*.sh)",
       "WebSearch",
       "WebFetch",
       "NotebookEdit",

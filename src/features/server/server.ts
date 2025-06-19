@@ -2,6 +2,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { Result, ok, err } from 'neverthrow';
 import debug from 'debug';
+import { screenshotToolWrapper, type ScreenshotOptions } from '../screenshot/index.js';
 
 const log = debug('mcp:calculator');
 
@@ -10,10 +11,11 @@ export type CalculatorError = {
   message: string;
 };
 
+
 export async function addTool(
   { a, b }: { a: number; b: number },
   options: {
-    logger?: (message: string, ...args: any[]) => void;
+    logger?: (message: string, ...args: unknown[]) => void;
     textFormatter?: (a: number, b: number, result: number) => string;
   } = {}
 ): Promise<Result<{ content: Array<{ type: 'text'; text: string }> }, CalculatorError>> {
@@ -69,7 +71,7 @@ export async function addTool(
 export async function subtractTool(
   { a, b }: { a: number; b: number },
   options: {
-    logger?: (message: string, ...args: any[]) => void;
+    logger?: (message: string, ...args: unknown[]) => void;
     textFormatter?: (a: number, b: number, result: number) => string;
   } = {}
 ): Promise<Result<{ content: Array<{ type: 'text'; text: string }> }, CalculatorError>> {
@@ -163,11 +165,12 @@ export async function subtractToolWrapper(args: { a: number; b: number }) {
   );
 }
 
+
 export function createStdioServer(): McpServer {
   log('Creating MCP Server instance');
 
   const server = new McpServer({
-    name: "calculator",
+    name: "screenshot-calculator",
     version: "1.0.0",
     capabilities: {
       resources: {},
@@ -197,6 +200,20 @@ export function createStdioServer(): McpServer {
     subtractToolWrapper
   );
 
-  log('MCP Server created with add and subtract tools');
+  // Register the "screenshot" tool with error handling wrapper
+  server.tool(
+    "screenshot",
+    "Capture screenshots of web pages using Puppeteer",
+    {
+      url: z.string(),
+      width: z.number().optional(),
+      height: z.number().optional(),
+      fullPage: z.boolean().optional(),
+      outputPath: z.string().optional(),
+    },
+    screenshotToolWrapper
+  );
+
+  log('MCP Server created with add, subtract and screenshot tools');
   return server;
 };
