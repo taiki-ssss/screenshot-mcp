@@ -18,8 +18,13 @@
       "Edit(project/tasks/**)",
       "Edit(src/**)",
       "MultiEdit",
+      "NotebookEdit",
+      "NotebookRead",
       "mcp__ide__getDiagnostics",
-      "mcp__deepwiki__*",
+      "mcp__ide__executeCode",
+      "mcp__deepwiki__read_wiki_structure",
+      "mcp__deepwiki__read_wiki_contents",
+      "mcp__deepwiki__ask_question",
       "Bash(npm run build)",
       "Bash(npm run test)",
       "Bash(npm run test:cov)",
@@ -27,16 +32,13 @@
       "Bash(npm run lint)",
       "Bash(npm run lint:fix)",
       "Bash(rm:*)",
+      "Bash(mv:*)",
       "Bash(date)"
     ],
     "deny": [
       "Bash",
       "WebSearch",
-      "WebFetch",
-      "NotebookEdit",
-      "NotebookRead",
-      "mcp__ide__executeCode",
-      "exit_plan_mode"
+      "WebFetch"
     ]
   },
   "enabledMcpjsonServers": [

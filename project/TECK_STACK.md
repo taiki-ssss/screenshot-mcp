@@ -1,4 +1,3 @@
-# 使用技術
 - **言語**: `Typescript`
 - **MCPフレームワーク**: `@modelcontextprotocol/sdk`
 - **スキーマバリデーション**: `zod`

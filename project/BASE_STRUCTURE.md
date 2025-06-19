@@ -1,5 +1,3 @@
-# 基本ディレクトリ構造
-
 ```
 mcp-template/
   ├── CLAUDE.md                      # Claude Memoryに保存される
