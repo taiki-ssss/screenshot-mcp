@@ -11,6 +11,7 @@ export async function screenshotTool(
   testOptions: {
     logger?: (message: string, ...args: unknown[]) => void;
     browserLauncher?: () => Promise<puppeteer.Browser>;
+    disableAutoScroll?: boolean;
   } = {}
 ): Promise<Result<{ content: Array<{ type: 'text'; text: string }>; metadata: ScreenshotMetadata }, ScreenshotError>> {
   const logger = testOptions.logger || screenshotLog;
@@ -76,8 +77,20 @@ export async function screenshotTool(
       // ページの読み込み
       await page.goto(options.url, { 
         waitUntil: 'networkidle2',
-        timeout: 30000
+        timeout: 60000
       });
+
+      // 画像遅延読み込み対応: フルページの場合は自動スクロール実行
+      if (fullPage && !testOptions.disableAutoScroll) {
+        logger('Starting auto-scroll for lazy loading images');
+        const module = await import('puppeteer-autoscroll-down') as { scrollPageToBottom: (page: unknown, options: unknown) => Promise<number> };
+        const { scrollPageToBottom } = module;
+        const scrollCount = await scrollPageToBottom(page, {
+          scrollDelay: 300,  // スクロール間隔（ミリ秒）
+          elementDelay: 100  // 要素待機時間（ミリ秒）
+        });
+        logger('Auto-scroll completed, scrolled %d times', scrollCount);
+      }
 
       // スクリーンショット取得
       await page.screenshot({
@@ -120,7 +133,7 @@ export async function screenshotTool(
       if (errorObj.name === 'TimeoutError') {
         return err({
           type: 'TIMEOUT_ERROR',
-          message: `Screenshot timed out after 30000ms`
+          message: `Screenshot timed out after 60000ms`
         });
       }
       
@@ -178,6 +191,7 @@ export async function screenshotToolWrapperForTest(
   testOptions?: {
     logger?: (message: string, ...args: unknown[]) => void;
     browserLauncher?: () => Promise<puppeteer.Browser>;
+    disableAutoScroll?: boolean;
   }
 ) {
   const result = await screenshotTool(args, testOptions);

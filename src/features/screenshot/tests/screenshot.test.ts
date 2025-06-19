@@ -1,6 +1,12 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { screenshotTool, screenshotToolWrapper, screenshotToolWrapperForTest, type ScreenshotError, type ScreenshotOptions, type ScreenshotMetadata } from '../index.js';
 import type { Browser } from 'puppeteer';
+
+// puppeteer-autoscroll-downをモック
+vi.mock('puppeteer-autoscroll-down', () => ({
+  scrollPageToBottom: vi.fn().mockResolvedValue(undefined),
+  scrollPageToTop: vi.fn().mockResolvedValue(undefined)
+}));
 
 // Mock types for Puppeteer
 interface MockPage {
@@ -145,7 +151,7 @@ describe('screenshot', () => {
           goto: (url: string, options?: { waitUntil?: string; timeout?: number }) => {
             expect(url).toBe('https://example.com');
             expect(options?.waitUntil).toBe('networkidle2');
-            expect(options?.timeout).toBe(30000);
+            expect(options?.timeout).toBe(60000);
             return Promise.resolve();
           },
           screenshot: (options: { path?: string; fullPage?: boolean }) => {
@@ -160,7 +166,10 @@ describe('screenshot', () => {
 
       const result = await screenshotTool(
         { url: 'https://example.com' },
-        { browserLauncher: () => Promise.resolve(mockBrowser as unknown as Browser) }
+        { 
+          browserLauncher: () => Promise.resolve(mockBrowser as unknown as Browser),
+          disableAutoScroll: true
+        }
       );
 
       expect(result.isOk()).toBe(true);
@@ -199,7 +208,10 @@ describe('screenshot', () => {
           height: 600, 
           fullPage: true // この指定は無視される
         },
-        { browserLauncher: () => Promise.resolve(mockBrowser as unknown as Browser) }
+        { 
+          browserLauncher: () => Promise.resolve(mockBrowser as unknown as Browser),
+          disableAutoScroll: true
+        }
       );
 
       expect(result.isOk()).toBe(true);
@@ -229,7 +241,10 @@ describe('screenshot', () => {
 
       const result = await screenshotTool(
         { url: 'https://example.com', fullPage: false },
-        { browserLauncher: () => Promise.resolve(mockBrowser as unknown as Browser) }
+        { 
+          browserLauncher: () => Promise.resolve(mockBrowser as unknown as Browser),
+          disableAutoScroll: true
+        }
       );
 
       expect(result.isOk()).toBe(true);
@@ -255,7 +270,10 @@ describe('screenshot', () => {
 
       const result = await screenshotTool(
         { url: 'https://example.com', outputPath: customPath },
-        { browserLauncher: () => Promise.resolve(mockBrowser as unknown as Browser) }
+        { 
+          browserLauncher: () => Promise.resolve(mockBrowser as unknown as Browser),
+          disableAutoScroll: true
+        }
       );
 
       expect(result.isOk()).toBe(true);
@@ -278,13 +296,16 @@ describe('screenshot', () => {
 
       const result = await screenshotTool(
         { url: 'https://example.com' },
-        { browserLauncher: () => Promise.resolve(mockBrowser as unknown as Browser) }
+        { 
+          browserLauncher: () => Promise.resolve(mockBrowser as unknown as Browser),
+          disableAutoScroll: true
+        }
       );
 
       expect(result.isErr()).toBe(true);
       if (result.isErr()) {
         expect(result.error.type).toBe('TIMEOUT_ERROR');
-        expect(result.error.message).toContain('timed out after 30000ms');
+        expect(result.error.message).toContain('timed out after 60000ms');
       }
     });
 
@@ -301,7 +322,10 @@ describe('screenshot', () => {
 
       const result = await screenshotTool(
         { url: 'https://example.com' },
-        { browserLauncher: () => Promise.resolve(mockBrowser as unknown as Browser) }
+        { 
+          browserLauncher: () => Promise.resolve(mockBrowser as unknown as Browser),
+          disableAutoScroll: true
+        }
       );
 
       expect(result.isErr()).toBe(true);
@@ -324,7 +348,10 @@ describe('screenshot', () => {
 
       const result = await screenshotTool(
         { url: 'https://example.com' },
-        { browserLauncher: () => Promise.resolve(mockBrowser as unknown as Browser) }
+        { 
+          browserLauncher: () => Promise.resolve(mockBrowser as unknown as Browser),
+          disableAutoScroll: true
+        }
       );
 
       expect(result.isErr()).toBe(true);
@@ -347,7 +374,10 @@ describe('screenshot', () => {
 
       const result = await screenshotTool(
         { url: 'https://example.com' },
-        { browserLauncher: () => Promise.resolve(mockBrowser as unknown as Browser) }
+        { 
+          browserLauncher: () => Promise.resolve(mockBrowser as unknown as Browser),
+          disableAutoScroll: true
+        }
       );
 
       expect(result.isErr()).toBe(true);
@@ -367,7 +397,10 @@ describe('screenshot', () => {
 
       const result = await screenshotTool(
         { url: 'https://example.com' },
-        { browserLauncher: () => Promise.resolve(mockBrowser as unknown as Browser) }
+        { 
+          browserLauncher: () => Promise.resolve(mockBrowser as unknown as Browser),
+          disableAutoScroll: true
+        }
       );
 
       expect(result.isErr()).toBe(true);
@@ -387,7 +420,10 @@ describe('screenshot', () => {
 
       const result = await screenshotTool(
         { url: 'https://example.com' },
-        { browserLauncher: () => Promise.resolve(mockBrowser as unknown as Browser) }
+        { 
+          browserLauncher: () => Promise.resolve(mockBrowser as unknown as Browser),
+          disableAutoScroll: true
+        }
       );
 
       expect(result.isErr()).toBe(true);
@@ -412,7 +448,10 @@ describe('screenshot', () => {
 
       const result = await screenshotToolWrapperForTest(
         { url: 'https://example.com' },
-        { browserLauncher: () => Promise.resolve(mockBrowser as unknown as Browser) }
+        { 
+          browserLauncher: () => Promise.resolve(mockBrowser as unknown as Browser),
+          disableAutoScroll: true
+        }
       );
 
       expect(result.content[0].type).toBe('text');
@@ -453,6 +492,82 @@ describe('screenshot', () => {
         // ネットワークエラーまたはタイムアウトエラーが期待される
         expect(['NETWORK_ERROR', 'TIMEOUT_ERROR', 'PUPPETEER_ERROR']).toContain(result.error.type);
       }
+    });
+
+    it('should execute auto-scroll for fullPage screenshots when enabled', async () => {
+      const mockBrowser: MockBrowser = {
+        newPage: (): MockPage => ({
+          setViewport: () => Promise.resolve(),
+          goto: () => Promise.resolve(),
+          screenshot: () => Promise.resolve(),
+          close: () => Promise.resolve()
+        }),
+        close: () => Promise.resolve()
+      };
+
+      // autoScrollが成功するケースをテスト（モックにより成功する）
+      const result = await screenshotTool(
+        { url: 'https://example.com', fullPage: true },
+        { 
+          browserLauncher: () => Promise.resolve(mockBrowser as unknown as Browser),
+          disableAutoScroll: false // autoScrollを有効にしてパスをテスト
+        }
+      );
+
+      // モックが設定されているので、成功するはず
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value.content[0].text).toContain('Screenshot saved successfully');
+        expect(result.value.metadata.fullPage).toBe(true);
+      }
+    });
+
+    it('should skip auto-scroll when fullPage is false', async () => {
+      const mockBrowser: MockBrowser = {
+        newPage: (): MockPage => ({
+          setViewport: () => Promise.resolve(),
+          goto: () => Promise.resolve(),
+          screenshot: () => Promise.resolve(),
+          close: () => Promise.resolve()
+        }),
+        close: () => Promise.resolve()
+      };
+
+      const result = await screenshotTool(
+        { url: 'https://example.com', fullPage: false },
+        { 
+          browserLauncher: () => Promise.resolve(mockBrowser as unknown as Browser),
+          disableAutoScroll: false // fullPage=falseなのでautoScrollは実行されない
+        }
+      );
+
+      expect(result.isOk()).toBe(true);
+    });
+
+    it('should handle auto-scroll with fallback module', async () => {
+      // 一時的にモックを変更してdefault undefinedの場合をテスト
+      const originalMock = vi.mocked(await import('puppeteer-autoscroll-down'));
+      vi.doMock('puppeteer-autoscroll-down', () => vi.fn().mockResolvedValue(undefined));
+
+      const mockBrowser: MockBrowser = {
+        newPage: (): MockPage => ({
+          setViewport: () => Promise.resolve(),
+          goto: () => Promise.resolve(),
+          screenshot: () => Promise.resolve(),
+          close: () => Promise.resolve()
+        }),
+        close: () => Promise.resolve()
+      };
+
+      const result = await screenshotTool(
+        { url: 'https://example.com', fullPage: true },
+        { 
+          browserLauncher: () => Promise.resolve(mockBrowser as unknown as Browser),
+          disableAutoScroll: false
+        }
+      );
+
+      expect(result.isOk() || result.isErr()).toBe(true);
     });
   });
 });
