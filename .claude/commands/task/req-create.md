@@ -1,3 +1,3 @@
 - 作業時は必ずタスクファイルを`project/tasks/backlog`に作成
 - `project/template/REQUIREMENT_TASK.md`沿ったタスク記述
-- タスクファイルの命名規則は`[auto increment]-[task-name]-requirement.md`(`01-calculator-multiply-requirement.md`)
+- タスクファイルの命名規則は`[YYYYMMDDHHmmss]-[task-name]-requirement.md`

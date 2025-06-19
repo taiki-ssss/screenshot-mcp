@@ -15,6 +15,7 @@ export default defineConfig({
         '**/*.config.ts',
         '**/*.test.ts',
         '**/index.ts',
+        '**/types.ts'
       ],
       thresholds: {
         statements: 100,

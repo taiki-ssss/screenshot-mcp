@@ -16,3 +16,4 @@
 10. テストは`npm run test`を実行して確認する
 11. テストカバレッジは`npm run test:cov`を実行して確認する
 12. テストとカバレッジの確認は繰り返し行う
+13. `mcp__ide__getDiagnostics`ツールで言語診断を行う
